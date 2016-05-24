@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<header>
+<script  src="//code.jquery.com/jquery-1.9.1.min.js"></script>
+<script  src="//d3js.org/d3.v3.min.js"></script>
+<script src="d3.legend.js"></script>
+<style>
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis {
+  font: 12px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.arc text {
+  font: 12px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+.legend rect {
+  fill:white;
+  stroke:black;
+  opacity:0.7;}
+  
+ </style>
+
+
+<script>
+		var chartArray = [];
+		var monitorStatus = [];
+		var monitorResults = [];
+		var monitor_Type_Status = []
+		
+        $(document).ready(function () {
+            $.ajax({
+            type:'GET',
+            url: 'https://www.site24x7.com/api/monitors',
+            data: {authtoken: 'e16708698d4af2036ffc04a8b55446f5'},
+			dataType: 'jsonp',
+            success: function(result) {
+               //console.log(result);
+			   
+			   parseResults(result);
+			   
+             }
+        });
+        
+		function compareGroup(a,b) {
+		  
+		  if (a.monitor_group_id < b.monitor_group_id)
+			return -1;
+		  else if (a.monitor_group_id > b.monitor_group_id)
+			return 1;
+		  else 
+			return 0;
+		}
+
+		function compareType(a,b) {
+		  
+		  if (a.type < b.type)
+			return -1;
+		  else if (a.type > b.type)
+			return 1;
+		  else 
+			return 0;
+		}
+		
+			
+		function parseResults(result){
+			var resultdata = result.body.data;
+			//resultdata.sort(compareType);
+			resultdata.sort(compareGroup);
+			
+			
+			var pingCount =0, urlCount =0, portCount =0, restCount=0, DNSCount=0, key =0;
+			var monitor_group_id = "", monitor_group_count = 0, temp_monitor_group_id="";
+			temp_monitor_group_id = resultdata[0].monitor_group_id;
+			
+			for(var i =0;i<resultdata.length;i++){
+			
+				monitor_group_id = resultdata[i].monitor_group_id;
+				
+				//monitorResults.push({"monitor_id":resultdata[i].monitor_id});	
+			
+				//if(monitor_group_id == temp_monitor_group_id) {
+					
+					if(resultdata[i].type =="DNS") {
+							DNSCount++;
+							monitor_group_count++;
+					} else if (resultdata[i].type =="PING") {
+							pingCount++; 
+							monitor_group_count++;
+					} else if(resultdata[i].type =="PORT") {
+							portCount++;
+							monitor_group_count++;
+					} else if(resultdata[i].type =="RESTAPI") {
+							restCount++;
+							monitor_group_count++;
+					} else if(resultdata[i].type =="URL") {
+							urlCount++;
+							monitor_group_count++;
+					}
+					
+					
+				/*} else {
+					key++;
+					if(DNSCount>0) 
+						chartArray.push(new Array({"key":key,"count":DNSCount,"type":"DNS","group_id":monitor_group_id,"group_count":DNSCount}));
+					
+					if(pingCount>0) 
+						chartArray.push(new Array({"key":key,"count":pingCount,"type":"PING","group_id":monitor_group_id,"group_count":pingCount}));
+					
+					if (urlCount>0)
+						chartArray.push(new Array({"key":key,"count":urlCount ,"type":"URL","group_id":monitor_group_id,"group_count":urlCount}));
+					
+					if (portCount>0)
+						chartArray.push(new Array({"key":key,"count":portCount, "type":"PORT","group_id":monitor_group_id,"group_count":portCount}));
+					
+					if (restCount > 0)
+						chartArray.push(new Array({"key":key,"count":restCount, "type":"RESTAPI","group_id":monitor_group_id,"group_count":restCount}));
+					
+					temp_monitor_group_id = monitor_group_id;
+					monitor_group_count=0, pingCount =0, urlCount =0, portCount =0, restCount=0, DNSCount=0;
+				}
+				*/
+				
+			};
+
+			
+			chartArray.push({"count":DNSCount,"type":"DNS","group_id":monitor_group_id,"group_count":DNSCount});
+			chartArray.push({"count":pingCount,"type":"PING","group_id":monitor_group_id,"group_count":pingCount});
+			chartArray.push({"count":urlCount ,"type":"URL","group_id":monitor_group_id,"group_count":urlCount});
+			chartArray.push({"count":restCount, "type":"RESTAPI","group_id":monitor_group_id,"group_count":restCount});
+			chartArray.push({"count":portCount, "type":"PORT","group_id":monitor_group_id,"group_count":portCount});
+					
+				
+			getStatusInfo(pingCount, urlCount, portCount, restCount); 
+			setTimeout(5000);
+			
+			//var dfd = $.Deferred();
+			//listMonitorGroups(chartArray);
+			
+			renderMonitorsDiv(chartArray);
+			//renderStackedChart(chartArray)
+			
+	}; //parseResults ends
+	function renderStackedChart(chartArray,groups) {
+	
+	//Width and height
+			var w = 500;
+			var h = 300;
+			
+			var dataset = chartArray;
+			//Set up stack method
+			var stack = d3.layout.stack();
+
+			//Data, stacked
+			stack(dataset);
+
+			//Set up scales
+			var xScale = d3.scale.ordinal()
+				.domain(d3.range(dataset[0].length))
+				.rangeRoundBands([0, w], 0.05);
+		
+			var yScale = d3.scale.linear()
+				.domain([0,				
+					d3.max(dataset, function(d) {
+						return d3.max(d, function(d) {
+							return d.y0 + d.y;
+						});
+					})
+				])
+				.range([0, h]);
+				
+			//Easy colors accessible via a 10-step ordinal scale
+			var colors = d3.scale.category10();
+		
+			//Create SVG element
+			var svg = d3.select("#monitors")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+	
+			// Add a group for each row of data
+			var groups = svg.selectAll("g")
+				.data(dataset)
+				.enter()
+				.append("g")
+				.style("fill", function(d, i) {
+					return colors(i);
+				});
+	
+			// Add a rect for each data value
+			var rects = groups.selectAll("rect")
+				.data(function(d) { return d; })
+				.enter()
+				.append("rect")
+				.attr("x", function(d, i) {
+					return xScale(i);
+				})
+				.attr("y", function(d) {
+					return yScale(d.y0);
+				})
+				.attr("height", function(d) {
+					return yScale(d.y);
+				})
+				.attr("width", xScale.rangeBand());
+	}
+	function renderMonitorsDiv(chartArray) {
+	
+	var data  = chartArray;
+			//[{count:15,type:"PING"}, {count:15,type:"URL"}];
+		
+			var margin = {top: 20, right: 20, bottom: 30, left: 40},
+				width = 450 - margin.left - margin.right,
+				height = 350 - margin.top - margin.bottom;
+
+			var x = d3.scale.ordinal()
+				.rangeRoundBands([0, width], .1);
+
+			var y = d3.scale.linear()
+				.range([height, 0]);
+
+			var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom");
+
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left")
+				.ticks(10);
+
+				
+			var svg = d3.select("#monitors").append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			  x.domain(data.map(function(d) { return d.type; }));
+			  y.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+			  svg.append("g")
+				  .attr("class", "x axis")
+				  .attr("transform", "translate(0," + height + ")")
+				  .call(xAxis)
+				  .append("text")
+				  .attr("x", 200)
+				  .attr("dy", "5.0em")
+				  .style("text-anchor", "center")
+				  .text("Types of Monitors");
+
+				svg.append("g")
+				  .attr("class", "y axis")
+				  .call(yAxis)
+				  .append("text")
+				  .attr("transform", "rotate(-90)")
+				  .attr("y", 6)
+				  .attr("dy", ".71em")
+				  .style("text-anchor", "end")
+				  .text("Number of Monitors");
+
+				var bar = svg.selectAll(".bar")
+				  .data(data)
+				  .enter()
+				.append("rect")
+				  .attr("class", "bar")
+				  .attr("x", function(d) { return x(d.type); })
+				  .attr("width", x.rangeBand())
+				  .attr("y", function(d) { return y(d.count); })
+				  .attr("height", function(d) { return height - y(d.count); })
+				  .style("fill", "#6699ff");
+				
+				
+			
+	}; //barchar ends
+	
+	function renderStateDiv(monitor_Type_Status,pingCount, urlCount, portCount, restCount) {
+		
+			
+			var pingStateCount = 0, urlStateCount = 0 , portStateCount =0 , restStateCount =0;
+			var monitor_id =0;
+			
+			for(var i =0;i<monitor_Type_Status.length;i++){
+			
+				if (monitor_Type_Status[i].type =="PING") {
+						//pingCount++; 
+						if (monitor_Type_Status[i].status =="1") pingStateCount++;
+										
+				}
+				else if(monitor_Type_Status[i].type =="URL") {
+						//urlCount++;
+						if (monitor_Type_Status[i].status =="1") urlStateCount++;
+						
+				}
+				else if(monitor_Type_Status[i].type =="PORT") {
+						//portCount++;
+						if (monitor_Type_Status[i].status =="1") portStateCount++;
+						
+				}
+				else if(monitor_Type_Status[i].type =="RESTAPI") {
+						//restCount++;
+						if (monitor_Type_Status[i].status =="1") restStateCount++;
+						
+				}
+				
+			}
+			
+			monitorStatus.push(new Array({"count":pingStateCount,"type":"PING","status":1},
+										{"count":pingCount-pingStateCount,"type":"PING","status":0}));	
+			monitorStatus.push(new Array({"count":urlStateCount,"type":"URL","status":1},
+										{"count":urlCount-urlStateCount,"type":"URL","status":0}));	
+			monitorStatus.push(new Array({"count":portStateCount, "type":"PORT","status":1},
+										{"count":portCount-portStateCount, "type":"PORT","status":0}));	
+			monitorStatus.push(new Array({"count":restStateCount, "type":"RESTAPI","status":1},
+										{"count":restCount-restStateCount, "type":"RESTAPI","status":0}));
+										
+			var data = monitorStatus;
+			
+					// Define the data as a two-dimensional array of numbers. If you had other
+		// data to associate with each number, replace each number with an object, e.g.,
+		// `{key: "value"}`.
+		/*var data = [
+		   [{"status" : "0", "count" : 100}, {"status" : "1","count" : 200}],
+		  [{"status" : "0","count" : 100}, {"status" : "1","count" : 200}],
+		  [{"status" : "0","count" : 100}, {"status" : "1","count" : 200}],
+		  [{"status" : "0","count" : 100}, {"status" : "1","count" : 200}]
+		];*/
+
+		// Define the margin, radius, and color scale. The color scale will be
+		// assigned by index, but if you define your data using objects, you could pass
+		// in a named field from the data object instead, such as `d.name`. Colors
+		// are assigned lazily, so if you want deterministic behavior, define a domain
+		// for the color scale.
+		var m = 10,
+			r = 70,
+			z = d3.scale.ordinal()
+			.range(["#00cc66", "#ff9900"]);
+			
+		// Insert an svg element (with margin) for each row in our dataset. A child g
+		// element translates the origin to the pie center.
+		var svg = d3.select("#monitorStatus").selectAll("svg")
+			.data(data)
+		  .enter().append("svg")
+			.attr("width", (r + m) * 2)
+			.attr("height", (r + m) * 2)
+			.append("g")
+			 .attr("transform", "translate(" + (r + m) + "," + (r + m) + ")");
+
+		//svg.style('cursor','pointer');
+			 
+		// The data for each svg element is a row of numbers (an array). We pass that to
+		// d3.layout.pie to compute the angles for each arc. These start and end angles
+		// are passed to d3.svg.arc to draw arcs! Note that the arc radius is specified
+		// on the arc, not the layout.
+		var arc = d3.svg.arc()
+				.innerRadius(r / 2)
+				.outerRadius(r)
+
+		var labelArc = d3.svg.arc()
+			.outerRadius(r - 20)
+			.innerRadius(r - 20);
+
+		
+
+			var g = svg.selectAll(".arc")
+			  .data(d3.layout.pie().value(function(d) { return d.count; }))
+			.enter().append("g")
+			  .attr("class", "arc");
+
+		
+			  
+		g.append("path")
+			  .attr("data-legend",function(d) { return d.data.type + " " +  (d.data.status==1? "UP":"DOWN");})
+			  .attr("d", arc)
+			  .style("fill", function(d, i) { return z(i); });
+			  
+		g.append("text")
+			  .attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+			  .attr("dy", ".35em")
+			  .style('cursor','pointer')
+			  .text(function(d) { return d.data.count; })
+					.on("click", function(d){
+					var win = window.open("https://www.site24x7.com/app/client#/web/"+d.data.type, '_blank');
+					//win.focus();
+				});
+				
+	
+		legend = svg.append("g")
+			  .attr("class","legend")
+			  .attr("transform","translate(-40,25)")
+			  .style("font-size","8px")
+			  .call(d3.legend);
+	  
+	
+
+	};
+	
+	function getStatusInfo(pingCount, urlCount, portCount, restCount) {
+		var ajaxcalls = [];
+		var monitors = [];
+		ajaxcalls = $.ajax({
+					type:'GET',
+					url: 'https://www.site24x7.com/api/current_status',
+					data: {authtoken: 'e16708698d4af2036ffc04a8b55446f5' , group_required:false},
+					dataType: 'jsonp',
+					success: function(result) {
+						//console.log(result);  
+						monitors = result.body.data.monitors;
+						for(var id=0;id<monitors.length;id++) {
+								monitor_Type_Status.push({	"id":monitors[id].monitor_id,
+															"type":monitors[id].monitor_type,
+															"status":monitors[id].status});
+						}
+						renderStateDiv(monitor_Type_Status, pingCount, urlCount, portCount, restCount);
+						//getOutageInfo();				
+					}
+				}); 
+	};
+	
+	function fetchStatusForMonitors(monitorResults,pingCount, urlCount, portCount, restCount) {
+		var ajaxcalls = [];
+		for(var key in monitorResults){
+		(function(key){
+				 ajaxcalls[key] = $.ajax({
+					type:'GET',
+					url: 'https://www.site24x7.com/api/current_status/'+ monitorResults[key].monitor_id,
+					data: {authtoken: 'e16708698d4af2036ffc04a8b55446f5'},
+					dataType: 'jsonp',
+					success: function(result) {
+						//console.log(result);    
+						monitor_Type_Status.push({"id":result.body.data.monitor_id,
+											"type":result.body.data.monitor_type,
+											"status":result.body.data.status});
+						//renderStateDiv(monitor_Type_Status);					
+					}
+				}); 
+
+				//console.debug(monitorResults[key].monitor_id);
+			})(key);
+		};
+	
+		// this will setup the promise --- 
+		// what will run when all  AJAX calls complete?
+		$.when.apply(null, ajaxcalls).then(function() {
+			renderStateDiv(monitor_Type_Status, pingCount, urlCount, portCount, restCount);
+		});
+
+	
+		
+	};
+	
+	function getOutageInfo() {
+		var ajaxcalls = [];
+		var outage = [];
+		ajaxcalls = $.ajax({
+					type:'GET',
+					url: 'https://www.site24x7.com/api/reports/outage?period=2',
+					data: {authtoken: 'e16708698d4af2036ffc04a8b55446f5'},
+					dataType: 'jsonp',
+					success: function(result) {
+						console.log(result);  
+						outage = result.body.data.outage_details;
+						
+										
+					}
+				}); 
+	};
+	
+	function listMonitorGroups() {
+		
+		//var ajaxcalls = [];
+		var groups = [];
+		$.ajax({
+					type:'GET',
+					url: 'https://www.site24x7.com/api/monitor_groups',
+					data: {authtoken: 'e16708698d4af2036ffc04a8b55446f5'},
+					dataType: 'jsonp'
+					}
+				).done(function(result) { 
+					console.log(result); 
+					groups = result.body.data;
+					renderStackedChart(chartArray,groups);
+				 });
+		
+		
+
+	};
+	
+});
+
+
+
+
+//function type(d) {
+//  d.population = +d.population;
+//  return d;
+//}
+
+</script>
+</header>
+<body>
+    <h1 align="center">Site24x7 Monitors Analysis</h1>
+    <table id="main" align="center" border=0>
+		<tr>
+		<td width=500><h2 align="center">Monitors By Type</h2><div align = "center" id="monitors"></div></td>
+		<td width=400><h2 align="center">Monitors By Status</h2><div align = "center" id="monitorStatus"></div></td>
+		</tr>
+		
+	</table>
+    
+    
+</body>
+</html>
