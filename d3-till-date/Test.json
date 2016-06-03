@@ -1,0 +1,67 @@
+{
+    "name": "Infogroup Monitors",
+    "children": [{
+            "name": "APIGEE PROXY",
+            "children": [
+                {
+                    "name": "ULTRA DNS",
+                    "children": [
+                        {
+                            "name": "F5",
+                            "children": [
+                                {
+                                    "name": "DMZ",
+                                    "children": [
+                                        {
+                                            "name": "MINI V1",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "MMDB",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "Couch DB",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "SQL Servers",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "IUSA Match",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "AWS DNS",
+                    "children": [
+                        {
+                            "name": "ELB",
+                            "children": [
+                                {
+                                    "name": "PRIVATE CLOUD",
+                                    "children": [
+                                        {
+                                            "name": "ELB",
+                                            "children": [
+                                                {
+                                                    "name": "MINI V2",
+                                                    "children": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }]
+
+        }]
+}

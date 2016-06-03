@@ -1,0 +1,103 @@
+div.tooltip {   
+    position: absolute;
+    text-align: left;
+    /*width: 200px;*/
+    width: auto;
+    min-width: 200px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightgrey;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+    cursor: pointer;
+}
+div.tooltip img {
+    height: 15px;
+    width: 15px;
+    margin: 1px 2px 1px 2px;
+}
+.bar {
+    fill: steelblue;
+}
+.bar:hover {
+    fill: brown;
+}
+.axis {
+    font: 12px sans-serif;
+}
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+.x.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+.arc text {
+    font: 12px sans-serif;
+    text-anchor: middle;
+}
+.arc path {
+    stroke: #fff;
+}
+.legend rect {
+    fill:white;
+    stroke:black;
+    opacity:0.7;
+}
+node {
+    cursor: pointer;
+}
+.overlay{
+    background-color:#EEE;
+}
+.node circle {
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+}
+.node text {
+    font-size:10px; 
+    font-family:sans-serif;
+}
+.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1.5px;
+}
+.link.module-down { 
+    stroke: red;
+}
+.link.module-unrechable {
+    stroke: orange;
+}
+.templink {
+    fill: none;
+    stroke: red;
+    stroke-width: 3px;
+}
+.ghostCircle.show {
+    display:block;
+}
+.ghostCircle, .activeDrag .ghostCircle{
+    display: none;
+}
+.selected {
+    color: orange;
+}
+.node {
+    position: absolute;
+    list-style: none;
+    cursor: default;
+}
+.node span {
+    margin-right: 3px;
+}
+.node .caret {
+    font-size: 10px;
+}

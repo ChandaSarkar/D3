@@ -1,0 +1,44 @@
+{
+    "name": "Infogroup Monitors",
+    "children": [{
+            "name": "Prod - AP",
+            "children": [{
+                    "name": "UltraDNS",
+                    "children": [{
+                            "name": "F5",
+                            "children": [{
+                                    "name": "DMZ",
+                                    "children": [{
+                                            "name": "CouchDB",
+                                            "size": 100
+                                        }, {
+                                            "name": "SQL",
+                                            "size": 100
+                                        }, {
+                                            "name": "MMDB",
+                                            "size": 100
+                                        }, {
+                                            "name": "IUSA",
+                                            "size": 100
+                                        }]
+                                }]
+                        }]
+                }, {
+                    "name": "AWS-DNS",
+                    "children": [{
+                            "name": "ELB",
+                            "children": [{
+                                    "name": "Private Cloud",
+                                    "children": [{
+                                            "name": "ELB MINI",
+                                            "children": [{
+                                                    "name": "MINI V1"
+                                                }, {
+                                                    "name": "MINI V2"
+                                                }]
+                                        }]
+                                }]
+                        }]
+                }]
+        }]
+}
