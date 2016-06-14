@@ -1,7 +1,6 @@
-div.tooltip {   
+div.tooltip {
     position: absolute;
     text-align: left;
-    /*width: 200px;*/
     width: auto;
     min-width: 200px;
     padding: 2px;
@@ -15,7 +14,7 @@ div.tooltip {
 div.tooltip img {
     height: 15px;
     width: 15px;
-    margin: 1px 2px 1px 2px;
+    margin: 1px 2px -2px 2px;
 }
 .bar {
     fill: steelblue;
@@ -46,14 +45,14 @@ div.tooltip img {
     stroke: #fff;
 }
 .legend rect {
-    fill:white;
-    stroke:black;
-    opacity:0.7;
+    fill: white;
+    stroke: black;
+    opacity: 0.7;
 }
 node {
     cursor: pointer;
 }
-.overlay{
+.overlay {
     background-color:#EEE;
 }
 .node circle {
@@ -62,15 +61,15 @@ node {
     stroke-width: 1.5px;
 }
 .node text {
-    font-size:10px; 
-    font-family:sans-serif;
+    font-size:10px;
+    font-family: sans-serif;
 }
 .link {
     fill: none;
     stroke: #ccc;
     stroke-width: 1.5px;
 }
-.link.module-down { 
+.link.module-down {
     stroke: red;
 }
 .link.module-unrechable {
@@ -82,9 +81,9 @@ node {
     stroke-width: 3px;
 }
 .ghostCircle.show {
-    display:block;
+    display: block;
 }
-.ghostCircle, .activeDrag .ghostCircle{
+.ghostCircle, .activeDrag .ghostCircle {
     display: none;
 }
 .selected {
